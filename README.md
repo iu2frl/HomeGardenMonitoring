@@ -1,6 +1,6 @@
 # Home garden monitor using AD8232
 
-[aloe plant](./images/aloe.jpg)
+![aloe plant](./images/aloe.jpg)
 
 This is a sample project I did to spend some time in programming, I had an AD8232 evaluation board lying around and I wanted to find a way to use it for my garden (as I am not specially skilled in gardening).
 
