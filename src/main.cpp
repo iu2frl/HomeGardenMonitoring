@@ -28,6 +28,7 @@ float sampleSignalAndGetFreq() {
   {
     realValues[i] = analogRead(analog_input);
     imagValues[i] = 0;
+    delayMicroseconds(800);
   }
   // Calculate how much time have passed
   float elapsedMillis = static_cast<float>(millis() - start);
@@ -45,6 +46,7 @@ void calculateFFT(double samplingFreq) {
   ArduinoFFT<float> FFT = ArduinoFFT<float>(realValues, imagValues, samples, samplingFreq);
   FFT.windowing(FFTWindow::Hamming, FFTDirection::Forward);
   FFT.compute(FFTDirection::Forward);
+  FFT.dcRemoval();
   // The output will overwrite the first half of the integer data array.
   FFT.complexToMagnitude();
   Serial.println("FFT calculation completed in " + String(millis() - start) + "ms");
@@ -101,11 +103,13 @@ void setupOTA() {
   ArduinoOTA.begin();
 }
 
-String serializeData() {
+String serializeData(float samplingFreq) {
   Serial.println("Starting JSON creation");
   // Create JSON to be stored in DB
   JsonDocument jsonDocument;
   jsonDocument["device"] = SENSOR_NAME;
+  jsonDocument["sampleFreq"] = samplingFreq;
+  jsonDocument["samplesCnt"] = samples;
   JsonArray data = jsonDocument.createNestedArray("data");
   for (size_t i = 0; i < (samples/2); i++)
   {
@@ -117,7 +121,7 @@ String serializeData() {
   return outputDocument;
 }
 
-void pushToInflux() {
+void pushToInflux(float samplingFreq) {
   Serial.println("Starting FFT storage to InfluxDB");
   // Single InfluxDB instance
   InfluxDBClient client(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN);
@@ -125,7 +129,7 @@ void pushToInflux() {
   // Set tags
   pointDevice.addTag("device", SENSOR_NAME);
   // Add data
-  pointDevice.addField("json_data", serializeData());
+  pointDevice.addField("json_data", serializeData(samplingFreq));
   // Write data
   if (!client.writePoint(pointDevice)) {
     Serial.print("InfluxDB write failed: ");
@@ -157,10 +161,11 @@ void loop() {
   // Calculate the FFT of the signal
   calculateFFT(samplingFreq);
   // Push data to InfluxDB
-  pushToInflux();
+  pushToInflux(samplingFreq);
   // Wait some time
-  for (size_t i = 0; i < 60; i++)
+  for (size_t i = 0; i < 600; i++)
   {
-    delay(1000);
+    ArduinoOTA.handle();
+    delay(100);
   }
 }

@@ -24,12 +24,13 @@ def get_from_influx(url: str, token: str, org: str, bucket: str, sensorname: str
     # Define the query
     query = f"""
     from(bucket: "{bucket}")
-    |> range(start: -1h, stop: now())
+    |> range(start: -8h, stop: now())
     |> filter(fn: (r) => r["_measurement"] == "garden_fft_data")
     |> filter(fn: (r) => r["_field"] == "json_data")
     |> filter(fn: (r) => r["device"] == "{sensorname}")
-    |> aggregateWindow(every: 2s, fn: last, createEmpty: false)
+    |> aggregateWindow(every: 1m, fn: last, createEmpty: false)
     |> yield(name: "last")
+    |> sort(columns: ["_time"], desc: true)
     """
 
     # Execute the query
@@ -64,7 +65,7 @@ def plot_data(data_list: list[list[float]]):
 
     # Add labels
     plt.xlabel('Frequency')
-    plt.ylabel('Time')
+    plt.ylabel('Minutes ago')
     plt.title('FFT Results')
 
     # Show plot

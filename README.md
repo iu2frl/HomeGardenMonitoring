@@ -5,7 +5,6 @@ This is a sample project I did to spend some time in programming, I had an AD823
 ## Required material
 
 - NodeMCU 1.0 (ESP12E)
-- 
 - AD8232 evaluation board
 - Breadboard and jumper wires (if needed)
 - InfluxDB server
@@ -34,3 +33,23 @@ This code samples the signals from the plant and generates the FFT, which can la
     - Add a line containing `#define INFLUXDB_TOKEN "token"` and configure it properly
     - Add a line containing `#define INFLUXDB_ORG "org"` and configure it properly
     - Add a line containing `#define INFLUXDB_BUCKET "bucket"` and configure it properly
+
+### Deploy
+
+- Connect the NodeMCU to the device
+- Make sure Platform.io is installed on Visual Studio Code
+- Move to the Platform.io extension
+- Select `nodemcuv2` from the list
+- Click `Upload`
+
+## FFT Test
+
+A sample python script is provided in the `python` folder
+
+### Usage
+
+Connections settings are automatically loaded from `include/secrets.h`, the same file that is used by the Arduino code
+
+- `cd` to the `python` folder
+- Install requirements with `pip install -r requirements.txt`
+- Execute the script with `python3 ./main.py`
