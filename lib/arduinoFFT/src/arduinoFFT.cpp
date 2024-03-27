@@ -24,10 +24,10 @@
 template <typename T> ArduinoFFT<T>::ArduinoFFT() {}
 
 template <typename T>
-ArduinoFFT<T>::ArduinoFFT(T *vReal, T *vImag, uint_fast16_t samples,
+ArduinoFFT<T>::ArduinoFFT(T *realValues, T *imagValues, uint_fast16_t samples,
                           T samplingFrequency, bool windowingFactors)
-    : _samples(samples), _samplingFrequency(samplingFrequency), _vImag(vImag),
-      _vReal(vReal) {
+    : _samples(samples), _samplingFrequency(samplingFrequency), _vImag(imagValues),
+      _vReal(realValues) {
   if (windowingFactors) {
     _precompiledWindowingFactors = new T[samples / 2];
   }
@@ -49,11 +49,11 @@ template <typename T> void ArduinoFFT<T>::complexToMagnitude(void) const {
 }
 
 template <typename T>
-void ArduinoFFT<T>::complexToMagnitude(T *vReal, T *vImag,
+void ArduinoFFT<T>::complexToMagnitude(T *realValues, T *imagValues,
                                        uint_fast16_t samples) const {
-  // vM is half the size of vReal and vImag
+  // vM is half the size of realValues and imagValues
   for (uint_fast16_t i = 0; i < samples; i++) {
-    vReal[i] = sqrt_internal(sq(vReal[i]) + sq(vImag[i]));
+    realValues[i] = sqrt_internal(sq(realValues[i]) + sq(imagValues[i]));
   }
 }
 
@@ -63,14 +63,14 @@ template <typename T> void ArduinoFFT<T>::compute(FFTDirection dir) const {
 }
 
 template <typename T>
-void ArduinoFFT<T>::compute(T *vReal, T *vImag, uint_fast16_t samples,
+void ArduinoFFT<T>::compute(T *realValues, T *imagValues, uint_fast16_t samples,
                             FFTDirection dir) const {
-  compute(vReal, vImag, samples, exponent(samples), dir);
+  compute(realValues, imagValues, samples, exponent(samples), dir);
 }
 
 // Computes in-place complex-to-complex FFT
 template <typename T>
-void ArduinoFFT<T>::compute(T *vReal, T *vImag, uint_fast16_t samples,
+void ArduinoFFT<T>::compute(T *realValues, T *imagValues, uint_fast16_t samples,
                             uint_fast8_t power, FFTDirection dir) const {
 #ifdef FFT_SPEED_OVER_PRECISION
   T oneOverSamples = this->_oneOverSamples;
@@ -81,9 +81,9 @@ void ArduinoFFT<T>::compute(T *vReal, T *vImag, uint_fast16_t samples,
   uint_fast16_t j = 0;
   for (uint_fast16_t i = 0; i < (samples - 1); i++) {
     if (i < j) {
-      swap(&vReal[i], &vReal[j]);
+      swap(&realValues[i], &realValues[j]);
       if (dir == FFTDirection::Reverse)
-        swap(&vImag[i], &vImag[j]);
+        swap(&imagValues[i], &imagValues[j]);
     }
     uint_fast16_t k = (samples >> 1);
 
@@ -105,12 +105,12 @@ void ArduinoFFT<T>::compute(T *vReal, T *vImag, uint_fast16_t samples,
     for (j = 0; j < l1; j++) {
       for (uint_fast16_t i = j; i < samples; i += l2) {
         uint_fast16_t i1 = i + l1;
-        T t1 = u1 * vReal[i1] - u2 * vImag[i1];
-        T t2 = u1 * vImag[i1] + u2 * vReal[i1];
-        vReal[i1] = vReal[i] - t1;
-        vImag[i1] = vImag[i] - t2;
-        vReal[i] += t1;
-        vImag[i] += t2;
+        T t1 = u1 * realValues[i1] - u2 * imagValues[i1];
+        T t2 = u1 * imagValues[i1] + u2 * realValues[i1];
+        realValues[i1] = realValues[i] - t1;
+        imagValues[i1] = imagValues[i] - t2;
+        realValues[i] += t1;
+        imagValues[i] += t2;
       }
       T z = ((u1 * c1) - (u2 * c2));
       u2 = ((u1 * c2) + (u2 * c1));
@@ -134,11 +134,11 @@ void ArduinoFFT<T>::compute(T *vReal, T *vImag, uint_fast16_t samples,
   if (dir == FFTDirection::Reverse) {
     for (uint_fast16_t i = 0; i < samples; i++) {
 #ifdef FFT_SPEED_OVER_PRECISION
-      vReal[i] *= oneOverSamples;
-      vImag[i] *= oneOverSamples;
+      realValues[i] *= oneOverSamples;
+      imagValues[i] *= oneOverSamples;
 #else
-      vReal[i] /= samples;
-      vImag[i] /= samples;
+      realValues[i] /= samples;
+      imagValues[i] /= samples;
 #endif
     }
   }
@@ -261,9 +261,9 @@ template <typename T> uint8_t ArduinoFFT<T>::revision(void) {
 
 // Replace the data array pointers
 template <typename T>
-void ArduinoFFT<T>::setArrays(T *vReal, T *vImag, uint_fast16_t samples) {
-  _vReal = vReal;
-  _vImag = vImag;
+void ArduinoFFT<T>::setArrays(T *realValues, T *imagValues, uint_fast16_t samples) {
+  _vReal = realValues;
+  _vImag = imagValues;
   if (samples) {
     _samples = samples;
 #ifdef FFT_SPEED_OVER_PRECISION
