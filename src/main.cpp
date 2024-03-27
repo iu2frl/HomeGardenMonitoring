@@ -39,7 +39,7 @@ float sampleSignalAndGetFreq() {
 }
 
 void calculateFFT(double samplingFreq) {
-  Serial.println("Calculating FFT of the signal. Sampling frequency: " + String(samplingFreq));
+  Serial.println("Calculating FFT of the signal. Sampling frequency: " + String(samplingFreq) + "Hz");
   // Perform the FFT
   unsigned long start = millis();
   ArduinoFFT<float> FFT = ArduinoFFT<float>(realValues, imagValues, samples, samplingFreq);
@@ -146,8 +146,8 @@ void setup() {
   Serial.println("====   OTA Init    ====");
   setupOTA();
   Serial.println("==== Configuration ====");
-  Serial.print("Analog pin: " + String(analog_input));
-  Serial.print("Samples count: " + String(samples));
+  Serial.println("Analog pin: " + String(analog_input));
+  Serial.println("Samples count: " + String(samples));
   Serial.println("====   Starting    ====");
 }
 
@@ -158,4 +158,9 @@ void loop() {
   calculateFFT(samplingFreq);
   // Push data to InfluxDB
   pushToInflux();
+  // Wait some time
+  for (size_t i = 0; i < 60; i++)
+  {
+    delay(1000);
+  }
 }
