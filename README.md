@@ -46,4 +46,4 @@ This code samples the signals from the plant and generates the FFT, which can la
 
 ## FFT Test
 
-A sample Jupyter script is provided in the `python` folder to be tested
+A sample [Jupyter script](./python/main.ipynb) is provided in the `python` folder to be tested
