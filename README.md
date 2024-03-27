@@ -44,12 +44,4 @@ This code samples the signals from the plant and generates the FFT, which can la
 
 ## FFT Test
 
-A sample python script is provided in the `python` folder
-
-### Usage
-
-Connections settings are automatically loaded from `include/secrets.h`, the same file that is used by the Arduino code
-
-- `cd` to the `python` folder
-- Install requirements with `pip install -r requirements.txt`
-- Execute the script with `python3 ./main.py`
+A sample Jupyter script is provided in the `python` folder to be tested
